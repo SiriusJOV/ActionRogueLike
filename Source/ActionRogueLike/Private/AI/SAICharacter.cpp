@@ -6,20 +6,33 @@
 #include "AIController.h"
 #include "BehaviorTree/BlackboardComponent.h"
 #include "DrawDebugHelpers.h"
+#include "SAttributeComponent.h"
+#include "BrainComponent.h"
 
 // Sets default values
 ASAICharacter::ASAICharacter()
 {
 	PawnSensingComp = CreateDefaultSubobject<UPawnSensingComponent>("PawnSensingComp");
+	AttributeComp = CreateDefaultSubobject<USAttributeComponent>("AttributeComp");
+
+	AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;
+
+	//GetMesh()->SetGenerateOverlapEvents(true);
+
+	TimeToHitParamName = "TimeToHit";
 
 
 
 }
 
+
+
 void ASAICharacter::PostInitializeComponents()
 {
 	Super::PostInitializeComponents();
 	PawnSensingComp->OnSeePawn.AddDynamic(this, &ASAICharacter::OnPawnSeen);
+
+	AttributeComp->OnHealthChanged.AddDynamic(this, &ASAICharacter::OnHealthChanged);
 }
 
 void ASAICharacter::OnPawnSeen(APawn* Pawn)
@@ -35,6 +48,54 @@ void ASAICharacter::OnPawnSeen(APawn* Pawn)
 	}
 
 }
+
+void ASAICharacter::SetTargetActor(AActor* NewTarget)
+{
+	AAIController* AIC = Cast<AAIController>(GetController());
+	if (AIC)
+	{
+		AIC->GetBlackboardComponent()->SetValueAsObject("TargetActor", NewTarget);
+	}
+
+}
+
+void ASAICharacter::OnHealthChanged(AActor* InstigatorActor, USAttributeComponent* OwningComp, float NewHealth, float Delta)
+{
+	if (Delta < 0.0f)
+	{
+
+		if (InstigatorActor != this)
+		{
+			SetTargetActor(InstigatorActor);
+
+		}
+
+		GetMesh()->SetScalarParameterValueOnMaterials(TimeToHitParamName, GetWorld()->TimeSeconds);
+
+		if (NewHealth <= 0.0f)
+		{
+			// stop BT
+			AAIController* AIC = Cast<AAIController>(GetController());
+
+			if (AIC)
+			{
+				AIC->GetBrainComponent()->StopLogic("Health < 0");
+			}
+
+			// ragdoll
+			GetMesh()->SetAllBodiesSimulatePhysics(true);
+			GetMesh()->SetCollisionProfileName("Ragdoll");
+
+
+			// destroy actor
+
+			SetLifeSpan(10.0f);
+
+		}
+	}
+
+}
+
 
 
 
