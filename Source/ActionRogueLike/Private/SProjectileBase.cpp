@@ -7,6 +7,11 @@
 #include "Particles/ParticleSystemComponent.h"
 #include "Kismet/GameplayStatics.h"
 
+#include "Components/AudioComponent.h"
+#include "Sound/SoundCue.h"
+#include "Camera/CameraShakeBase.h" // Check this exists?
+
+
 // TODO: Not included in lecture -> But how else do you get the radial force components from the SProjectile base class when making the 
 // Blackhole blueprint? 
 
@@ -27,6 +32,12 @@ ASProjectileBase::ASProjectileBase()
 	MoveComp->ProjectileGravityScale = 0.0f;
 	MoveComp->InitialSpeed = 8000;
 
+	AudioComp = CreateDefaultSubobject<UAudioComponent>("AudioComp");
+	AudioComp->SetupAttachment(RootComponent);
+
+	ImpactShakeInnerRadius = 250.0f;
+	ImpactShakeOuterRadius = 250.0f;
+
 
 }
 
@@ -41,10 +52,9 @@ void ASProjectileBase::Explode_Implementation() // Note: Need the _Implementatio
 	{
 		UGameplayStatics::SpawnEmitterAtLocation(this, ImpactVFX, GetActorLocation(), GetActorRotation());
 
-		EffectComp->DeactivateSystem();
+		UGameplayStatics::PlaySoundAtLocation(this, ImpactSound, GetActorLocation());
 
-		MoveComp->StopMovementImmediately();
-		SetActorEnableCollision(false);
+		UGameplayStatics::PlayWorldCameraShake(this, ImpactShake, GetActorLocation(), ImpactShakeInnerRadius, ImpactShakeOuterRadius);
 
 		Destroy();
 	}
