@@ -83,6 +83,11 @@ void ASCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponen
 
 }
 
+void ASCharacter::HealSelf(float Amount /*=100*/)
+{
+	AttributeComp->ApplyHealthChange(this, Amount);
+}
+
 void ASCharacter::PostInitializeComponents() {
 
 	Super::PostInitializeComponents();

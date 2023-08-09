@@ -13,33 +13,30 @@ void USBTService_CheckAttackRange::TickNode(UBehaviorTreeComponent& OwnerComp, u
 	if (ensure(BlackBoardComp))
 	{
 		AActor* TargetActor = Cast<AActor>(BlackBoardComp->GetValueAsObject("TargetActor"));
-		if (TargetActor) {
+		if (TargetActor) 
+		{
 			AAIController* MyController = OwnerComp.GetAIOwner();
-			if (ensure(MyController))
+			APawn* AIPawn = MyController->GetPawn();
+			if (ensure(AIPawn))
 			{
-				APawn* AIPawn = MyController->GetPawn();
-				if (AIPawn)
+				float DistanceTo = FVector::Distance(TargetActor->GetActorLocation(), AIPawn->GetActorLocation());
+
+				bool bWithinRange = DistanceTo < MaxAttackRange;
+
+				bool bHasLOS = false;
+
+				if (bWithinRange)
 				{
-					FVector::Distance(TargetActor->GetActorLocation(), AIPawn->GetActorLocation());
-
-					float DistanceTo = FVector::Distance(TargetActor->GetActorLocation(), AIPawn->GetActorLocation());
-
-					bool bWithinRange = DistanceTo < 2000.f;
-
-					bool bHasLOS = false;
-					if (bWithinRange)
-					{
-						bHasLOS = MyController->LineOfSightTo(TargetActor);
-					}
-
-					// line of sight
-
-				
-
-					BlackBoardComp->SetValueAsBool(AttackRangeKey.SelectedKeyName, (bHasLOS && bWithinRange));
-
+					bHasLOS = MyController->LineOfSightTo(TargetActor);
 				}
+				BlackBoardComp->SetValueAsBool(AttackRangeKey.SelectedKeyName, (bWithinRange && bHasLOS));
 			}
 		}
 	}
+}
+
+USBTService_CheckAttackRange::USBTService_CheckAttackRange()
+{
+	MaxAttackRange = 2000.f;
+
 }

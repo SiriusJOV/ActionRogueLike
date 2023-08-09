@@ -8,6 +8,8 @@
 
 class UPawnSensingComponent;
 class USAttributeComponent;
+class UUserWidget;
+class USWorldUserWidget;
 
 
 UCLASS()
@@ -20,6 +22,11 @@ public:
 	ASAICharacter();
 
 protected:
+
+	USWorldUserWidget* ActiveHealthBar;
+
+	UPROPERTY(EditDefaultsOnly, Category = "UI");
+	TSubclassOf<UUserWidget> HealthBarWidgetClass;
 
 	UPROPERTY(VisibleAnywhere, Category = "Effects");
 	FName TimeToHitParamName;

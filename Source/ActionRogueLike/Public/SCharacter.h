@@ -104,5 +104,8 @@ public:
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
+	UFUNCTION(Exec) // Turns into console command - only works in Game mode, Player Character, Character controller, Cheat Manager
+	void HealSelf(float Amount=100);
+
 
 };
