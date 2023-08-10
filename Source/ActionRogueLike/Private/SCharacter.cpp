@@ -9,6 +9,7 @@
 #include "SInteractionComponent.h"
 #include "SAttributeComponent.h"
 #include "Kismet/GameplayStatics.h"
+#include "SActionComponent.h"
 
 // Sets default values
 ASCharacter::ASCharacter()
@@ -27,14 +28,14 @@ ASCharacter::ASCharacter()
 
 	AttributeComp = CreateDefaultSubobject<USAttributeComponent>("AttributeComp");
 
+	ActionComp = CreateDefaultSubobject< USActionComponent>("ActionComp");
+
 	GetCharacterMovement()->bOrientRotationToMovement = true;
 
 	bUseControllerRotationYaw = false;
 
-	AttackAnimDelay = 0.2f;
-
 	TimeToHitParamName = "TimeToHit";
-	HandSocketName = "Muzzle_01";
+
 }
 
 
@@ -46,6 +47,20 @@ void ASCharacter::MoveForward(float value) {
 
 	AddMovementInput(ControlRot.Vector(), value);
 }
+
+void ASCharacter::SprintStart()
+{
+	ActionComp->StartActionByName(this, "Sprint");
+
+
+}
+
+
+void ASCharacter::SprintStop()
+{
+	ActionComp->StopActionByName(this, "Sprint");
+}
+
 
 void ASCharacter::MoveRight(float value) {
 
@@ -81,6 +96,9 @@ void ASCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponen
 
 	PlayerInputComponent->BindAction("PrimaryInteract", IE_Pressed, this, &ASCharacter::PrimaryInteract);
 
+	PlayerInputComponent->BindAction("Sprint", IE_Pressed, this, &ASCharacter::SprintStart);
+	PlayerInputComponent->BindAction("Sprint", IE_Released, this, &ASCharacter::SprintStop);
+
 }
 
 void ASCharacter::HealSelf(float Amount /*=100*/)
@@ -93,6 +111,11 @@ void ASCharacter::PostInitializeComponents() {
 	Super::PostInitializeComponents();
 
 	AttributeComp->OnHealthChanged.AddDynamic(this, &ASCharacter::OnHealthChanged);
+}
+
+FVector ASCharacter::GetPawnViewLocation() const
+{
+	return CameraComp->GetComponentLocation();
 }
 
 void ASCharacter::OnHealthChanged(AActor* InstigatorActor, USAttributeComponent* OwningComp, float NewHealth, float Delta) {
@@ -113,17 +136,14 @@ void ASCharacter::OnHealthChanged(AActor* InstigatorActor, USAttributeComponent*
 
 void ASCharacter::PrimaryAttack() {
 
-	StartAttackEffects();
+	//StartAttackEffects();
 
-	// After 2 seconds the timer will trigger the PrimaryAttack function Spawning the projectile
-	GetWorldTimerManager().SetTimer(TimerHandle_PrimaryAttack, this, &ASCharacter::PrimaryAttack_TimeElapsed, AttackAnimDelay);
+	//// After 2 seconds the timer will trigger the PrimaryAttack function Spawning the projectile
+	//GetWorldTimerManager().SetTimer(TimerHandle_PrimaryAttack, this, &ASCharacter::PrimaryAttack_TimeElapsed, AttackAnimDelay);
+
+	ActionComp->StartActionByName(this, "PrimaryAttack");
 
 
-}
-
-void ASCharacter::PrimaryAttack_TimeElapsed() {
-
-	SpawnProjectile(ProjectileClass);
 }
 
 void ASCharacter::PrimaryInteract() {
@@ -137,31 +157,14 @@ void ASCharacter::PrimaryInteract() {
 // Adding in functions
 void ASCharacter::BlackHoleAttack()
 {
-	StartAttackEffects();
-	GetWorldTimerManager().SetTimer(TimerHandle_BlackholeAttack, this, &ASCharacter::BlackholeAttack_TimeElapsed, AttackAnimDelay);
+	ActionComp->StartActionByName(this, "Blackhole");
 }
-
-
-
-void ASCharacter::BlackholeAttack_TimeElapsed()
-{
-	SpawnProjectile(BlackHoleProjectileClass);
-
-}
-
-
 
 void ASCharacter::Dash()
 {
-	StartAttackEffects();
-	GetWorldTimerManager().SetTimer(TimerHandle_Dash, this, &ASCharacter::Dash_TimeElapsed, AttackAnimDelay);
+	ActionComp->StartActionByName(this, "Dash");
 }
 
-
-void ASCharacter::Dash_TimeElapsed()
-{
-	SpawnProjectile(DashProjectileClass);
-}
 
 //void ASCharacter::PrimaryAttack_TimeElapsed() {
 //
@@ -175,61 +178,4 @@ void ASCharacter::Dash_TimeElapsed()
 //
 //	GetWorld()->SpawnActor<AActor>(ProjectileClass, SpawnTM, SpawnParams);
 //}
-
-void ASCharacter::StartAttackEffects()
-{
-	PlayAnimMontage(AttackAnim);
-
-	UGameplayStatics::SpawnEmitterAttached(CastingEffect, GetMesh(), HandSocketName, FVector::ZeroVector, FRotator::ZeroRotator, EAttachLocation::SnapToTarget);
-}
-
-void ASCharacter::SpawnProjectile(TSubclassOf<AActor> ClassToSpawn)
-{
-	if (ensureAlways(ClassToSpawn))
-	{
-		FVector HandLocation = GetMesh()->GetSocketLocation(HandSocketName);
-		FActorSpawnParameters SpawnParams;
-		SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-		SpawnParams.Instigator = this;
-
-		FHitResult Hit;
-		FVector TraceStart = CameraComp->GetComponentLocation();
-
-		// endpoint of look at distance
-		FVector TraceEnd = CameraComp->GetComponentLocation() + (GetControlRotation().Vector() * 5000);
-
-
-		FCollisionShape Shape;
-		Shape.SetSphere(20.0f);
-
-		FCollisionQueryParams Params;
-		Params.AddIgnoredActor(this);
-
-		FCollisionObjectQueryParams ObjParams;
-		ObjParams.AddObjectTypesToQuery(ECC_WorldDynamic);
-		ObjParams.AddObjectTypesToQuery(ECC_WorldStatic);
-		ObjParams.AddObjectTypesToQuery(ECC_Pawn);
-
-		// if we get a blocking hit it returns true
-
-		FRotator ProjRotation;
-
-		if (GetWorld()->SweepSingleByObjectType(Hit, TraceStart, TraceEnd, FQuat::Identity, ObjParams, Shape, Params))
-		{
-			ProjRotation = FRotationMatrix::MakeFromX(Hit.ImpactPoint - HandLocation).Rotator();
-		}
-		else
-		{
-			ProjRotation = FRotationMatrix::MakeFromX(TraceEnd - HandLocation).Rotator();
-		}
-
-		//Find direction and rotation from hand pointing to impact point in world
-
-
-		FTransform SpawnTM = FTransform(ProjRotation, HandLocation);
-		GetWorld()->SpawnActor<AActor>(ClassToSpawn, SpawnTM, SpawnParams);
-
-	}
-}
-
 

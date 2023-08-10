@@ -13,6 +13,7 @@ class USInteractionComponent;
 class UAnimMontage;
 class USAttributeComponent;
 class UParticleSystem;
+class USActionComponent;
 
 
 UCLASS()
@@ -25,28 +26,6 @@ protected:
 	UPROPERTY(VisibleAnywhere, Category = "Effects");
 	FName TimeToHitParamName;
 
-	UPROPERTY(VisibleAnywhere, Category = "Effects");
-	FName HandSocketName;
-
-	UPROPERTY(EditAnywhere, Category = "Attack")
-	TSubclassOf<AActor> ProjectileClass;
-
-	UPROPERTY(EditAnywhere, Category = "Attack")
-	UAnimMontage* AttackAnim;
-
-	UPROPERTY(EditAnywhere, Category = "Attack")
-	TSubclassOf<AActor> BlackHoleProjectileClass;
-
-	UPROPERTY(EditAnywhere, Category = "Attack")
-	TSubclassOf<AActor> DashProjectileClass;
-
-	UPROPERTY(EditAnywhere, Category = "Attack");
-	UParticleSystem* CastingEffect;
-
-
-	FTimerHandle TimerHandle_PrimaryAttack;
-	FTimerHandle TimerHandle_BlackholeAttack;
-	FTimerHandle TimerHandle_Dash;
 
 public:
 	// Sets default values for this character's properties
@@ -68,9 +47,16 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, Category = "Attack");
 	float AttackAnimDelay;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components");
+	USActionComponent* ActionComp;
 	
 
 	void MoveForward(float value);
+
+	void SprintStart();
+
+	void SprintStop();
 
 	void MoveRight(float value);
 
@@ -78,26 +64,16 @@ protected:
 
 	void PrimaryInteract();
 
-	void PrimaryAttack_TimeElapsed();
-
 	void BlackHoleAttack();
 
-	void BlackholeAttack_TimeElapsed();
-
 	void Dash();
-
-	void Dash_TimeElapsed();
-
-	void StartAttackEffects();
-
-	void SpawnProjectile(TSubclassOf<AActor> ClassToSpawn);
 
 	UFUNCTION()
 	void OnHealthChanged(AActor* InstigatorActor, USAttributeComponent* OwningComp, float NewHealth, float Delta);
 
 	virtual void PostInitializeComponents() override;
 
-
+	virtual FVector GetPawnViewLocation() const override;
 
 public:	
 

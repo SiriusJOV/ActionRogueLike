@@ -8,6 +8,9 @@
 #include "AI/SAICharacter.h"
 #include "SAttributeComponent.h"
 #include "EngineUtils.h"
+#include <SCharacter.h>
+
+static TAutoConsoleVariable<bool> CVarSpawnBots(TEXT("su.SpawnBots"), true, TEXT("Enables bot spawn via timer"), ECVF_Cheat);
 
 ASGameModeBase::ASGameModeBase()
 {
@@ -33,6 +36,12 @@ void ASGameModeBase::KillAll()
 
 void ASGameModeBase::SpawnBotTimerElapsed()
 {
+	if (!CVarSpawnBots.GetValueOnGameThread())
+	{
+		return;
+	}
+
+
 	UEnvQueryInstanceBlueprintWrapper* QueryInstance = UEnvQueryManager::RunEQSQuery(this, SpawnBotQuery, this, EEnvQueryRunMode::RandomBest5Pct, nullptr);
 	
 
@@ -52,6 +61,8 @@ void ASGameModeBase::OnQueryCompleted(UEnvQueryInstanceBlueprintWrapper* QueryIn
 	if (QueryStatus != EEnvQueryStatus::Success) {
 		return; 
 	}
+
+
 
 	int32 NrOfAliveBots = 0;
 	for (TActorIterator<ASAICharacter> It(GetWorld()); It; ++It)
@@ -86,6 +97,33 @@ void ASGameModeBase::OnQueryCompleted(UEnvQueryInstanceBlueprintWrapper* QueryIn
 		GetWorld()->SpawnActor<AActor>(MinionClass, Locations[0], FRotator::ZeroRotator);
 	}
 
+
+}
+
+void ASGameModeBase::RespawnPlayerElapsed(AController* Controller)
+{
+	if (ensure(Controller))
+	{
+		Controller->UnPossess(); // Detatches from player
+		RestartPlayer(Controller); // Respawns player after below is actioned
+	}
+
+}
+
+void ASGameModeBase::OnActorKilled(AActor* VictimActor, AActor* Killer)
+{
+	ASCharacter* Player = Cast <ASCharacter>(VictimActor);
+	if (Player)
+	{
+		FTimerHandle Timerhandle_RespawnDelay;
+
+		FTimerDelegate Delegate;
+		Delegate.BindUFunction(this, "RespawnPlayerElapsed", Player->GetController());
+
+
+		float RespawnDelay = 2.0f;
+		GetWorldTimerManager().SetTimer(Timerhandle_RespawnDelay, Delegate, RespawnDelay, false);
+	}
 
 }
 
