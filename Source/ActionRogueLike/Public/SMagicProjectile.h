@@ -11,6 +11,7 @@
 class USphereComponent;
 class UProjectileMovementComponent;
 class UParticleSystemComponent;
+class USActionEffect;
 
 UCLASS()
 class ACTIONROGUELIKE_API ASMagicProjectile : public ASProjectileBase // Note: Re-parented from AActor class.
@@ -32,5 +33,7 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Damage");
 	FGameplayTag ParryTag;
 
+	UPROPERTY(EditDefaultsOnly, Category = "Damage");
+	TSubclassOf<USActionEffect> BurningActionClass;
 
 };

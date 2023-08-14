@@ -37,6 +37,9 @@ protected:
 
 public:
 
+	UPROPERTY(EditDefaultsOnly, Category = "Action");
+	bool bAutoStart;
+
 	UFUNCTION(BlueprintNativeEvent, Category = "Action")
 		void StartAction(AActor* Instigator);
 

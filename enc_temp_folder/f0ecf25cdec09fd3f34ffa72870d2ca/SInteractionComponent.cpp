@@ -73,7 +73,7 @@ void USInteractionComponent::FindBestInteractable()
 			}
 		}
 
-		//DrawDebugSphere(GetWorld(), Hit.ImpactPoint, TraceRadius, 32, LineColor, false, 2.0f);
+		DrawDebugSphere(GetWorld(), Hit.ImpactPoint, TraceRadius, 32, LineColor, false, 2.0f);
 
 	}
 
