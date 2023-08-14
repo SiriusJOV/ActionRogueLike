@@ -27,9 +27,6 @@ public:
 	// Sets default values for this actor's properties
 	ASItemChest();
 
-
-
-
 protected:
 
 	UPROPERTY(VisibleAnywhere)
@@ -38,4 +35,9 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	UStaticMeshComponent* LidMesh;
 
+	UPROPERTY(ReplicatedUsing="OnRep_LidOpened", BlueprintReadOnly) // Synced across client and server.
+	bool bLidOpened;
+
+	UFUNCTION()
+	void OnRep_LidOpened();
 };

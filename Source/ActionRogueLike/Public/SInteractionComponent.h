@@ -46,6 +46,9 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "UI");
 	TEnumAsByte<ECollisionChannel> CollisionChannel;
 
+	UFUNCTION(Server, Reliable)
+	void ServerInteract(AActor* InFocus);
+
 public:	
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;

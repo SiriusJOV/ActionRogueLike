@@ -2,6 +2,7 @@
 
 
 #include "SItemChest.h"
+#include "Net/UnrealNetwork.h"
 
 // Sets default values
 ASItemChest::ASItemChest()
@@ -17,9 +18,31 @@ ASItemChest::ASItemChest()
 
 	TargetPitch = 110.0;
 
+	SetReplicates(true); // COnsiders this actor an updates clients whenever marked as 'interesting'
+
 }
 
 void ASItemChest::Interact_Implementation(APawn* InstigatorPawn) {
 	// When function is called, lid will be rotated
-	LidMesh->SetRelativeRotation(FRotator(TargetPitch, 0, 0));
+
+
+	bLidOpened = !bLidOpened;
+	OnRep_LidOpened();
+
+
+}
+
+void ASItemChest::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(ASItemChest, bLidOpened);
+}
+
+
+void ASItemChest::OnRep_LidOpened() 
+{
+	float CurrPitch = bLidOpened ? TargetPitch : 0.0f;
+	LidMesh->SetRelativeRotation(FRotator(CurrPitch, 0, 0));
+
 }

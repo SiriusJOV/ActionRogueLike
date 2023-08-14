@@ -109,15 +109,25 @@ void USInteractionComponent::FindBestInteractable()
 }
 
 
+
+
 // Called every frame
 void USInteractionComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
-	FindBestInteractable();
+		FindBestInteractable(); // If owner, responsible for input, then we'll run this function. Else ignored. 
+
+
+
 }
 
 void USInteractionComponent::PrimaryInteract() 
+{
+	ServerInteract(FocusedActor);
+}
+
+void USInteractionComponent::ServerInteract_Implementation(AActor* InFocus)
 {
 	if (FocusedActor == nullptr)
 	{
@@ -129,6 +139,6 @@ void USInteractionComponent::PrimaryInteract()
 
 	ISGameplayInterface::Execute_Interact(FocusedActor, MyPawn);
 
-}
 
+}
 
