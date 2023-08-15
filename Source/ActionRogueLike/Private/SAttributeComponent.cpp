@@ -3,6 +3,7 @@
 
 #include "SAttributeComponent.h"
 #include "SGameModeBase.h"
+#include "Net/UnrealNetwork.h"
 
 static TAutoConsoleVariable<float> CVarDamageMultiplier(TEXT("su.DamageMultiplier"), 1.0f, TEXT("Global damage modifier for attribute comp"), ECVF_Cheat);
 
@@ -12,6 +13,8 @@ USAttributeComponent::USAttributeComponent()
 
 	HealthMax = 100;
 	Health = HealthMax;
+
+	SetIsReplicatedByDefault(true);
 }
 
 bool USAttributeComponent::IsFullHealth() const
@@ -43,7 +46,12 @@ bool USAttributeComponent::ApplyHealthChange(AActor* InstigatorActor, float Delt
 
 
 	float ActualDelta = Health - OldHealth;
-	OnHealthChanged.Broadcast(InstigatorActor, this, Health, ActualDelta);
+	//OnHealthChanged.Broadcast(InstigatorActor, this, Health, ActualDelta);
+	if (ActualDelta != 0)
+	{
+		MulticastHealthChanged(InstigatorActor, Health, ActualDelta);
+	}
+
 
 	// Killed
 	if (ActualDelta < 0.0f && Health == 0.0f)
@@ -70,6 +78,7 @@ float USAttributeComponent::GetHealth() const
 	return Health;
 }
 
+
 bool USAttributeComponent::IsAlive() const {
 
 
@@ -95,4 +104,22 @@ bool USAttributeComponent::IsActorAlive(AActor* Actor)
 	}
 
 	return false;
+}
+
+void USAttributeComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(USAttributeComponent, Health);
+	DOREPLIFETIME(USAttributeComponent, HealthMax);
+
+	//DOREPLIFETIME_CONDITION(USAttributeComponent, HealthMax, COND_OwnerOnly); // E.,g. if health max changed, only the player 
+	// with that attribute attached would see it, An optimization for bandwidth. 
+	// Note: Aboveis something which may be added in later on
+
+}
+
+void USAttributeComponent::MulticastHealthChanged_Implementation(AActor* InstigatorActor, float NewHealth, float Delta)
+{
+	OnHealthChanged.Broadcast(InstigatorActor, this, NewHealth, Delta);
 }

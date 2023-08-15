@@ -14,6 +14,8 @@ ASPowerupActor::ASPowerupActor()
 
 	RespawnTime = 10.0f; // 10 seconds until respawns
 
+	SetReplicates(true); // if server spawns an actor, it will tell all clients to also make a copy of it
+
 }
 
 void ASPowerupActor::ShowPowerup()
