@@ -21,7 +21,7 @@ public:
 
 protected:
 
-	UPROPERTY();
+	UPROPERTY(Replicated);
 	TArray<USAction*> Actions;
 
 	UPROPERTY(EditAnywhere, Category = "Actions");
@@ -35,9 +35,13 @@ protected:
 	void ServerStartAction(AActor* Instigator, FName ActionName);
 
 
+
+
 public:	
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
+
+	bool ReplicateSubobjects(class UActorChannel* Channel, class FOutBunch* Bunch, FReplicationFlags* RepFlags) override;
 
 	UFUNCTION(BlueprintCallable, Category = "Actions")
 		void AddAction(AActor* Instigator,TSubclassOf<USAction> ActionClass);
@@ -53,5 +57,8 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Actions")
 		void RemoveAction(USAction* ActionToRemove);
+
+	UFUNCTION(BlueprintCallable, Category = "Actions")
+		USAction* GetAction(TSubclassOf<USAction> ActionClass) const;
 
 };

@@ -27,6 +27,7 @@ ASAICharacter::ASAICharacter()
 	GetMesh()->SetGenerateOverlapEvents(true);
 
 	TimeToHitParamName = "TimeToHit";
+	TargetActorKey = "TargetActor";
 
 
 
@@ -44,16 +45,30 @@ void ASAICharacter::PostInitializeComponents()
 
 void ASAICharacter::OnPawnSeen(APawn* Pawn)
 {
+	// If already set then ignore
+	if (GetTargetActor() != Pawn)
+	{
+		SetTargetActor(Pawn);
+
+		USWorldUserWidget* NewWidget = CreateWidget<USWorldUserWidget>(GetWorld(), SpottedWidgetClass);
+		if (NewWidget)
+		{
+			NewWidget->AttachedActor = this;
+			NewWidget->AddToViewport(10);
+		}
+	}
+	//DrawDebugString(GetWorld(), GetActorLocation(), "PLAYER SPOTTED", nullptr, FColor::White, 0.5f, true);
+}
+
+AActor* ASAICharacter::GetTargetActor() const
+{
 	AAIController* AIC = Cast<AAIController>(GetController());
 	if (AIC)
 	{
-		UBlackboardComponent* BBComp = AIC->GetBlackboardComponent();
-
-		BBComp->SetValueAsObject("TargetActor", Pawn);
-
-		DrawDebugString(GetWorld(), GetActorLocation(), "Player Spotted", nullptr, FColor::White, 4.0f, true);
+		return Cast<AActor>(AIC->GetBlackboardComponent()->GetValueAsObject(TargetActorKey));
 	}
 
+	return nullptr;
 }
 
 void ASAICharacter::SetTargetActor(AActor* NewTarget)
@@ -61,7 +76,7 @@ void ASAICharacter::SetTargetActor(AActor* NewTarget)
 	AAIController* AIC = Cast<AAIController>(GetController());
 	if (AIC)
 	{
-		AIC->GetBlackboardComponent()->SetValueAsObject("TargetActor", NewTarget);
+		AIC->GetBlackboardComponent()->SetValueAsObject(TargetActorKey, NewTarget);
 	}
 
 }

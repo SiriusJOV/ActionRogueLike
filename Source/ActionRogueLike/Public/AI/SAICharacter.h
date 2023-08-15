@@ -29,10 +29,20 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "UI");
 	TSubclassOf<UUserWidget> HealthBarWidgetClass;
 
+	UPROPERTY(EditDefaultsOnly, Category = "UI");
+	TSubclassOf<UUserWidget> SpottedWidgetClass;
+	
 	UPROPERTY(VisibleAnywhere, Category = "Effects");
 	FName TimeToHitParamName;
 
+	UPROPERTY(VisibleAnywhere, Category = "Effects");
+	FName TargetActorKey;
+
+	UFUNCTION(BlueprintCallable, Category = "AI")
 	void SetTargetActor(AActor* NewTarget);
+
+	UFUNCTION(BlueprintCallable, Category = "AI")
+	AActor* GetTargetActor() const;
 
 	virtual void PostInitializeComponents() override;
 
@@ -45,10 +55,14 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components");
 	USActionComponent* ActionComp;
 
+
+
 	UFUNCTION()
 	void OnPawnSeen(APawn* Pawn);
 
 	UFUNCTION()
 	void OnHealthChanged(AActor* InstigatorActor, USAttributeComponent* OwningComp, float NewHealth, float Delta);
+
+
 
 };
