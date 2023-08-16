@@ -3,6 +3,7 @@
 
 #include "SPlayerState.h"
 #include "SSaveGame.h"
+#include "Net/UnrealNetwork.h"
 
 
 
@@ -10,7 +11,7 @@
 void ASPlayerState::AddCredits(int32 Delta)
 {
 	// Avoid user-error of adding a negative amount or zero
-	if (!ensure(Delta > 0.0f))
+	if (!ensure(Delta >= 0.0f))
 	{
 		return;
 	}
@@ -59,6 +60,19 @@ void ASPlayerState::LoadPlayerState_Implementation(USSaveGame* SaveObject)
 {
 	if (SaveObject)
 	{
-		Credits = SaveObject->Credits; //TODO Add include for USSaveGame
+		//Credits = SaveObject->Credits; //TODO Add include for USSaveGame
+		AddCredits(SaveObject->Credits);
 	}
+}
+
+void ASPlayerState::OnRep_Credits(int32 OldCredits)
+{
+	OnCreditsChanged.Broadcast(this, Credits, Credits - OldCredits);
+}
+
+void ASPlayerState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(ASPlayerState, Credits);
 }

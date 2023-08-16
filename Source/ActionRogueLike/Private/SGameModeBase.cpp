@@ -170,15 +170,18 @@ void ASGameModeBase::InitGame(const FString& MapName, const FString& Options, FS
 
 void ASGameModeBase::HandleStartingNewPlayer_Implementation(APlayerController* NewPlayer)
 {
-	Super::HandleStartingNewPlayer_Implementation(NewPlayer);
+
 
 	// Get player state of the player who is joining
 	ASPlayerState* PS = NewPlayer->GetPlayerState<ASPlayerState>();
 
-	if (PS)
+	if (ensure(PS))
 	{
 		PS->LoadPlayerState(CurrentSaveGame);
 	}
+
+	// Above is called before super so that variables are set before beginning state is called in Player Controller. 
+	Super::HandleStartingNewPlayer_Implementation(NewPlayer);
 }
 
 
@@ -266,7 +269,7 @@ void ASGameModeBase::OnActorKilled(AActor* VictimActor, AActor* Killer)
 
 	// Give Credits for kill
 	APawn* KillerPawn = Cast<APawn>(Killer);
-	if (KillerPawn)
+	if (KillerPawn && KillerPawn != VictimActor)
 	{
 		if (ASPlayerState* PS = KillerPawn->GetPlayerState<ASPlayerState>()) // < can cast and check for nullptr within if-statement.
 		{

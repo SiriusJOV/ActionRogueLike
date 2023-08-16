@@ -3,6 +3,7 @@
 
 #include "SPowerupActor.h"
 #include "Components/SphereComponent.h"
+#include <Net/UnrealNetwork.h>
 
 // Sets default values
 ASPowerupActor::ASPowerupActor()
@@ -13,6 +14,7 @@ ASPowerupActor::ASPowerupActor()
 	RootComponent = SphereComp;
 
 	RespawnTime = 10.0f; // 10 seconds until respawns
+	bIsActive = true;
 
 	SetReplicates(true); // if server spawns an actor, it will tell all clients to also make a copy of it
 
@@ -33,9 +35,10 @@ void ASPowerupActor::HideAndCooldownPowerup()
 
 void ASPowerupActor::SetPowerupState(bool bNewIsActive)
 {
-	SetActorEnableCollision(bNewIsActive);
+	bIsActive = bNewIsActive;
+	OnRep_IsActive();
 
-	RootComponent->SetVisibility(bNewIsActive, true);
+	//RootComponent->SetVisibility(bNewIsActive, true);
 }
 
 void ASPowerupActor::Interact_Implementation(APawn* InstigatorPawn)
@@ -43,5 +46,16 @@ void ASPowerupActor::Interact_Implementation(APawn* InstigatorPawn)
 
 }
 
+void ASPowerupActor::OnRep_IsActive()
+{
+	SetActorEnableCollision(bIsActive);
+	RootComponent->SetVisibility(bIsActive, true);
+}
 
+void ASPowerupActor::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(ASPowerupActor, bIsActive);
+}
 

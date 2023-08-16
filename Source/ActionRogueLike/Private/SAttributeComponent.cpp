@@ -22,6 +22,11 @@ USAttributeComponent::USAttributeComponent()
 	SetIsReplicatedByDefault(true);
 }
 
+void USAttributeComponent::MulticastRageChanged_Implementation(AActor* InstigatorActor, float NewRage, float Delta)
+{
+	OnRageChanged.Broadcast(InstigatorActor, this, NewRage, Delta);
+}
+
 bool USAttributeComponent::IsFullHealth() const
 {
 	return Health == HealthMax;
@@ -146,6 +151,9 @@ void USAttributeComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>&
 
 	DOREPLIFETIME(USAttributeComponent, Health);
 	DOREPLIFETIME(USAttributeComponent, HealthMax);
+
+	DOREPLIFETIME(USAttributeComponent, Rage);
+	DOREPLIFETIME(USAttributeComponent, RageMax);
 
 	//DOREPLIFETIME_CONDITION(USAttributeComponent, HealthMax, COND_OwnerOnly); // E.,g. if health max changed, only the player 
 	// with that attribute attached would see it, An optimization for bandwidth. 
