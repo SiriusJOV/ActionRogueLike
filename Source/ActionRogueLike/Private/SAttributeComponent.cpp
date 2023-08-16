@@ -52,26 +52,33 @@ bool USAttributeComponent::ApplyHealthChange(AActor* InstigatorActor, float Delt
 	}
 
 	float OldHealth = Health;
-	Health = FMath::Clamp(Health + Delta, 0.0f, HealthMax);
-
-
+	float NewHealth = FMath::Clamp(Health + Delta, 0.0f, HealthMax);
 	float ActualDelta = Health - OldHealth;
-	//OnHealthChanged.Broadcast(InstigatorActor, this, Health, ActualDelta);
-	if (ActualDelta != 0)
-	{
-		MulticastHealthChanged(InstigatorActor, Health, ActualDelta);
-	}
 
-
-	// Killed
-	if (ActualDelta < 0.0f && Health == 0.0f)
+	// If server
+	if (GetOwner()->HasAuthority())
 	{
-		ASGameModeBase* GM = GetWorld()->GetAuthGameMode<ASGameModeBase>();
-		if (GM)
+		Health = NewHealth;
+
+		if (ActualDelta != 0)
 		{
-			GM->OnActorKilled(GetOwner(), InstigatorActor);
+			MulticastHealthChanged(InstigatorActor, Health, ActualDelta);
+		}
+
+		// Killed - Gamemodes only ever exist on the server, never on the client - so we may as well only include this on the server. 
+		if (ActualDelta < 0.0f && Health == 0.0f)
+		{
+			ASGameModeBase* GM = GetWorld()->GetAuthGameMode<ASGameModeBase>();
+			if (GM)
+			{
+				GM->OnActorKilled(GetOwner(), InstigatorActor);
+			}
 		}
 	}
+
+
+
+
 
 	return ActualDelta != 0;
 }

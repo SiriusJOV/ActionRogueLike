@@ -133,8 +133,6 @@ void ASCharacter::OnHealthChanged(AActor* InstigatorActor, USAttributeComponent*
 	{
 		APlayerController* PC = Cast<APlayerController>(GetController());
 		DisableInput(PC); // Prevents moving around
-
-		SetLifeSpan(5.0f); // cleans up corpses of player
 	}
 }
 

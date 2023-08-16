@@ -36,6 +36,8 @@ void USActionComponent::BeginPlay()
 	
 }
 
+
+
 USAction* USActionComponent::GetAction(TSubclassOf<USAction> ActionClass) const
 {
 	for (USAction* Action : Actions)
@@ -66,11 +68,8 @@ void USActionComponent::TickComponent(float DeltaTime, ELevelTick TickType, FAct
 	{
 		FColor TextColor = Action->IsRunning() ? FColor::Blue : FColor::White;
 
-		FString ActionMsg = FString::Printf(TEXT("{%s} Action %s: IsRunning: %s : Outer: %S"),
-			*GetNameSafe(GetOwner()),
-			* Action->ActionName.ToString(),
-			Action->IsRunning() ? TEXT("true") : TEXT("false"),
-			* GetNameSafe(Action->GetOuter()));
+		FString ActionMsg = FString::Printf(TEXT("{%s} Action %s"), *GetNameSafe(GetOwner()), *GetNameSafe(Action));
+
 
 		LogOnScreen(this, ActionMsg, TextColor, 0.0f);
 
@@ -86,6 +85,12 @@ void USActionComponent::AddAction(AActor* Instigator,TSubclassOf<USAction> Actio
 	{
 		return;
 
+	}
+
+	if (!GetOwner()->HasAuthority())
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Client attempting to add an action [class: %s]"), *GetNameSafe(ActionClass));
+		return;
 	}
 
 	USAction* NewAction = NewObject<USAction>(GetOwner(), ActionClass);
@@ -138,7 +143,12 @@ bool USActionComponent::StopActionByName(AActor* Instigator, FName ActionName)
 	{
 		if (Action && Action->ActionName == ActionName)
 		{
-			if (Action->IsRunning()) {
+			if (Action->IsRunning()) 
+			{
+				if (!GetOwner()->HasAuthority()) { // if it's the client
+					ServerStopAction(Instigator, ActionName);
+				}
+
 				Action->StopAction(Instigator);
 				return true;
 			}
@@ -147,6 +157,11 @@ bool USActionComponent::StopActionByName(AActor* Instigator, FName ActionName)
 	}
 
 	return false;
+}
+
+void USActionComponent::ServerStopAction_Implementation(AActor* Instigator, FName ActionName)
+{
+	StopActionByName(Instigator, ActionName);
 }
 
 void USActionComponent::RemoveAction(USAction* ActionToRemove)
