@@ -21,6 +21,8 @@ public:
 
 	void Interact_Implementation(APawn* InstigatorPawn);
 
+	void OnActorLoaded_Implementation();
+
 
 public:	
 
@@ -35,7 +37,7 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	UStaticMeshComponent* LidMesh;
 
-	UPROPERTY(ReplicatedUsing="OnRep_LidOpened", BlueprintReadOnly) // Synced across client and server.
+	UPROPERTY(ReplicatedUsing="OnRep_LidOpened", BlueprintReadOnly, SaveGame) // Synced across client and server.
 	bool bLidOpened;
 
 	UFUNCTION()

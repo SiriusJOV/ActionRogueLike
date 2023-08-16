@@ -32,6 +32,11 @@ void ASItemChest::Interact_Implementation(APawn* InstigatorPawn) {
 
 }
 
+void ASItemChest::OnActorLoaded_Implementation()
+{
+	OnRep_LidOpened(); // Ensures visual state is updated each time saved and loaded
+}
+
 void ASItemChest::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);

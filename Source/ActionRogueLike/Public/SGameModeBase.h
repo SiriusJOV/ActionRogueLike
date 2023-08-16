@@ -10,6 +10,8 @@
 class UEnvQuery;
 class UEnvQueryInstanceBlueprintWrapper;
 class UCurveFloat;
+class USSaveGame;
+
 
 /**
  * 
@@ -22,6 +24,12 @@ class ACTIONROGUELIKE_API ASGameModeBase : public AGameModeBase
 		// timer runs every 2 seconds then spawns bot at EQS query
 
 protected:
+
+
+	FString SlotName;
+
+	UPROPERTY();
+	USSaveGame* CurrentSaveGame;
 
 	UPROPERTY(EditDefaultsOnly, Category = "AI");
 	UCurveFloat* DifficultyCurve;
@@ -74,5 +82,15 @@ public:
 
 	UFUNCTION(Exec)
 	void KillAll();
+
+	UFUNCTION(BlueprintCallable, Category = "SaveGame")
+		void WriteSaveGame();
+
+	// Already managed in C++ so not marked as BP Callable. 
+	void LoadSaveGame();
+
+	void InitGame(const FString& MapName, const FString& Options, FString& ErrorMessage) override;
+
+	void HandleStartingNewPlayer_Implementation(APlayerController* NewPlayer) override;
 	
 };

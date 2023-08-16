@@ -7,8 +7,11 @@
 #include "SPlayerState.generated.h"
 
 
+
+
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FOnCreditsChanged, ASPlayerState*, PlayerState, int32, NewCredits, int32, Delta);
 
+class USSaveGame;
 
 /**
  *
@@ -20,6 +23,7 @@ class ACTIONROGUELIKE_API ASPlayerState : public APlayerState
 
 protected:
 
+	UPROPERTY(EditDefaultsOnly, Category = "Credits");
 	int32 Credits;
 
 public:
@@ -30,6 +34,16 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "PlayerState|Credits")
 		bool RemoveCredits(int32 Delta);
 
+	UFUNCTION(BlueprintCallable, Category = "PlayerState|Credits")
+		int32 GetCredits() const;
+
 	UPROPERTY(BlueprintAssignable, Category = "Events")
-		FOnCreditsChanged OnCreditsChanged;
+	FOnCreditsChanged OnCreditsChanged;
+
+	UFUNCTION(BlueprintNativeEvent)
+	void SavePlayerState(USSaveGame* SaveObject);
+
+	UFUNCTION(BlueprintNativeEvent)
+	void LoadPlayerState(USSaveGame* SaveObject);
+
 };
