@@ -18,12 +18,7 @@ void USAction::StartAction_Implementation(AActor* Instigator) // marked as buepr
 	RepData.bIsRunning = true;
 	RepData.Instigator = Instigator;
 
-
-	if (GetOwningComponent()->GetOwnerRole() == ROLE_Authority)
-	{
-		TimeStarted = GetWorld()->TimeSeconds;
-	}
-
+	TimeStarted = GetWorld()->TimeSeconds;
 
 	GetOwningComponent()->OnActionStarted.Broadcast(GetOwningComponent(), this);
 
@@ -112,5 +107,4 @@ void USAction::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLi
 
 	DOREPLIFETIME(USAction, RepData);
 	DOREPLIFETIME(USAction, ActionComp);
-	DOREPLIFETIME(USAction, TimeStarted);
 }

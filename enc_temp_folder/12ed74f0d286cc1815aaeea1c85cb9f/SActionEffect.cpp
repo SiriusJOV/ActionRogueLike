@@ -3,7 +3,6 @@
 
 #include "SActionEffect.h"
 #include "SActionComponent.h"
-#include "GameFramework/GameStateBase.h"
 
 USActionEffect::USActionEffect()
 {
@@ -13,19 +12,9 @@ USActionEffect::USActionEffect()
 
 float USActionEffect::GetTimeRemaining() const
 {
-	AGameStateBase* GS = GetWorld()->GetGameState<AGameStateBase>();
+	float EndTime = TimeStarted + Duration;
 
-	if (GS)
-	{
-		float EndTime = TimeStarted + Duration;
-
-		return EndTime - GS->GetServerWorldTimeSeconds(); // will now be synced across client and server - even when joining at different
-		// times. 
-	}
-
-	return Duration // Default
-
-
+	return EndTime - GetWorld()->TimeSeconds;
 }
 
 void USActionEffect::StartAction_Implementation(AActor* Instigator)

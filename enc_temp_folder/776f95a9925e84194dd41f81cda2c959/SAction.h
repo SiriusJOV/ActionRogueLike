@@ -61,7 +61,6 @@ protected:
 	UFUNCTION()
 	void OnRep_RepData();
 
-	UPROPERTY(Replicated);
 	float TimeStarted;
 
 
