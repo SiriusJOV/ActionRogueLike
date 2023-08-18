@@ -43,4 +43,6 @@ public:
 
 	void Interact_Implementation(APawn* InstigatorPawn) override;
 
+	FText GetInteractTest_Implementation(APawn* InstigatorPawn);
+
 };

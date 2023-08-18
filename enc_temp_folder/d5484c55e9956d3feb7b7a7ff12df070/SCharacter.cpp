@@ -163,9 +163,6 @@ void ASCharacter::PrimaryInteract() {
 void ASCharacter::BlackHoleAttack()
 {
 	ActionComp->StartActionByName(this, "Blackhole");
-
-	// Test to check old way works
-	
 }
 
 void ASCharacter::Dash()

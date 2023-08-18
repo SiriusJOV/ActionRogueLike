@@ -23,7 +23,7 @@ float USActionEffect::GetTimeRemaining() const
 		// times. 
 	}
 
-	return Duration // Default
+	return Duration; // Default
 
 
 }

@@ -16,7 +16,10 @@ USAttributeComponent::USAttributeComponent()
 
 	// Rage:
 
-	Rage = 0;
+	//Rage = 0;
+	//Setting Rage by default as 50 to test
+	Rage = 50;
+
 	RageMax = 100;
 
 	SetIsReplicatedByDefault(true);

@@ -7,6 +7,8 @@
 #include <Net/UnrealNetwork.h>
 #include "Engine/ActorChannel.h"
 
+DECLARE_CYCLE_STAT(TEXT("StartActionByName"), STAT_StartActionByName, STATGROUP_STANFORD);
+
 // Sets default values
 USActionComponent::USActionComponent()
 {
@@ -34,6 +36,24 @@ void USActionComponent::BeginPlay()
 	}
 
 	
+}
+
+void USActionComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+	// itteracte actions array - if running, stop action
+	TArray<USAction*> ActionsCopy = Actions;
+	for (USAction* Action : ActionsCopy)
+	{
+		if (Action && Action->IsRunning())
+		{
+			Action->StopAction(GetOwner());
+		}
+	}
+
+
+
+	Super::EndPlay(EndPlayReason);
+
 }
 
 
@@ -112,6 +132,9 @@ void USActionComponent::AddAction(AActor* Instigator,TSubclassOf<USAction> Actio
 
 bool USActionComponent::StartActionByName(AActor* Instigator, FName ActionName)
 {
+
+	SCOPE_CYCLE_COUNTER(STAT_StartActionByName); // this will measure everything within this function
+
 	for (USAction* Action : Actions)
 	{
 		if (Action && Action->ActionName == ActionName)
@@ -127,6 +150,7 @@ bool USActionComponent::StartActionByName(AActor* Instigator, FName ActionName)
 				ServerStartAction(Instigator, ActionName);
 			}
 
+			TRACE_BOOKMARK(TEXT("StartAction::%s"), *GetNameSafe(Action)); // Bookmark for UE.
 
 			Action->StartAction(Instigator);
 			return true;
